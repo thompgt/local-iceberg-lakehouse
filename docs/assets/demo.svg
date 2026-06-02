@@ -1,0 +1,38 @@
+<svg width="800" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="450" rx="12" fill="#1e1e1e"/>
+  
+  <!-- Terminal Header -->
+  <rect width="800" height="35" rx="12" fill="#333333"/>
+  <circle cx="20" cy="17.5" r="6" fill="#ff5f56"/>
+  <circle cx="40" cy="17.5" r="6" fill="#ffbd2e"/>
+  <circle cx="60" cy="17.5" r="6" fill="#27c93f"/>
+  <text x="400" y="22" font-family="monospace" font-size="14" fill="#888888" text-anchor="middle">local-iceberg-lakehouse — bash</text>
+
+  <!-- Terminal Content -->
+  <g font-family="monospace" font-size="16">
+    <!-- CLI Command -->
+    <text x="20" y="80" fill="#27c93f">thoma@lakehouse:~$</text>
+    <text x="180" y="80" fill="#ffffff">lakehouse query default.people --sql "SELECT * FROM people"</text>
+    
+    <!-- Table Output -->
+    <text x="20" y="120" fill="#888888">┌────┬───────────┐</text>
+    <text x="20" y="145" fill="#888888">│ id │ name      │</text>
+    <text x="20" y="170" fill="#888888">├────┼───────────┤</text>
+    <text x="20" y="195" fill="#ffffff">│ 1  │ Alice     │</text>
+    <text x="20" y="220" fill="#ffffff">│ 2  │ Bob       │</text>
+    <text x="20" y="245" fill="#888888">└────┴───────────┘</text>
+
+    <!-- AI Interaction -->
+    <text x="20" y="300" fill="#5fb3b3">AI (Claude):</text>
+    <text x="140" y="300" fill="#cccccc">"I've accessed your local lakehouse."</text>
+    <text x="20" y="330" fill="#cccccc">"Found 2 records in 'default.people'."</text>
+    
+    <!-- Pulse Icon -->
+    <circle cx="750" cy="410" r="10" fill="#27c93f" opacity="0.6">
+      <animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <text x="640" y="415" fill="#27c93f" font-size="12">LAKEHOUSE ONLINE</text>
+  </g>
+</svg>

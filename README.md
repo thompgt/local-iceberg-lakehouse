@@ -1,6 +1,9 @@
 # Local Iceberg Lakehouse
 
-A "local-first" data lakehouse implementation designed for privacy, speed, and AI-driven analytics. This project bridges the gap between structured enterprise-grade storage (**Apache Iceberg**) and Large Language Models (LLMs) via the **Model Context Protocol (MCP)**.
+![Local Iceberg Lakehouse Demo](docs/assets/demo.svg)
+
+A "local-first" data lakehouse implementation designed for privacy, speed, and AI-driven analytics.
+ This project bridges the gap between structured enterprise-grade storage (**Apache Iceberg**) and Large Language Models (LLMs) via the **Model Context Protocol (MCP)**.
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/thompgt/local-iceberg-lakehouse)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
