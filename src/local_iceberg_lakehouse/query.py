@@ -24,7 +24,7 @@ class QueryEngine:
                 arrow_table = table.scan().to_arrow()
                 self.con.register(logical_name, arrow_table)
         
-        return self.con.execute(sql).fetch_arrow_table()
+        return self.con.execute(sql).to_arrow_table()
 
     def append_data(self, table_name: str, data: pa.Table):
         table = self.catalog_manager.load_table(table_name)
@@ -61,5 +61,5 @@ class QueryEngine:
         )
         """
         
-        merged_data = self.con.execute(upsert_sql).fetch_arrow_table()
+        merged_data = self.con.execute(upsert_sql).to_arrow_table()
         table.overwrite(merged_data)
