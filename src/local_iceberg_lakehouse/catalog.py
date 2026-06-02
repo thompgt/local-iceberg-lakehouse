@@ -41,10 +41,13 @@ class CatalogManager:
     def load_table(self, table_name: str) -> Table:
         return self.catalog.load_table(table_name)
 
-    def list_tables(self) -> List[str]:
+    def list_tables(self, namespace: str = "default") -> List[str]:
         # list_tables returns list of tuples representing table identifiers
         # e.g., [('default', 'test_table')]
-        return [".".join(t) for t in self.catalog.list_tables("default")]
+        try:
+            return [".".join(t) for t in self.catalog.list_tables(namespace)]
+        except Exception:
+            return []
 
     def drop_table(self, table_name: str):
         self.catalog.drop_table(table_name)
