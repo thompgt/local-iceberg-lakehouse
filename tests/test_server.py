@@ -4,7 +4,16 @@ import pytest
 from pyiceberg.schema import Schema
 from pyiceberg.types import LongType, NestedField, StringType
 
-from local_iceberg_lakehouse.server import catalog_manager, list_tables, query, query_engine, rollback, upsert
+from local_iceberg_lakehouse.server import (
+    catalog_manager,
+    get_history,
+    get_table_schema,
+    list_tables,
+    query,
+    query_engine,
+    rollback,
+    upsert,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -66,3 +75,39 @@ def test_rollback_tool():
 
     res = query("SELECT val FROM t WHERE id = 1", {"t": table_name})
     assert json.loads(res)[0]["val"] == "A"
+
+def test_get_table_schema_nonexistent_table_returns_error():
+    result = get_table_schema("default.does_not_exist")
+    assert result.startswith("Error:")
+
+def test_get_table_schema_returns_schema():
+    schema = Schema(
+        NestedField(field_id=1, name="id", field_type=LongType(), required=False),
+    )
+    catalog_manager.create_table("default.schema_check", schema)
+
+    result = get_table_schema("default.schema_check")
+    parsed = json.loads(result)
+    assert "id" in parsed
+
+def test_get_history_nonexistent_table_returns_error():
+    result = get_history("default.does_not_exist")
+    assert result.startswith("Error:")
+
+def test_rollback_nonexistent_table_returns_error():
+    result = rollback("default.does_not_exist", 123)
+    assert result.startswith("Error:")
+
+def test_query_tool_rejects_non_read_only_sql():
+    result = query("DROP TABLE default.people")
+    assert result.startswith("Error:")
+
+def test_upsert_tool_rejects_invalid_join_cols():
+    schema = Schema(
+        NestedField(field_id=1, name="id", field_type=LongType(), required=False),
+    )
+    table_name = "default.upsert_error_check"
+    catalog_manager.create_table(table_name, schema)
+
+    result = upsert(table_name, [{"id": 1}], ["nonexistent_column"])
+    assert result.startswith("Error:")
