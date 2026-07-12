@@ -1,8 +1,8 @@
 import re
+
 import duckdb
 import pyarrow as pa
-from typing import Optional, Union, Dict, Any
-from pyiceberg.table import Table
+
 from .catalog import CatalogManager
 
 # Only allow a single read-only SELECT/WITH statement through query().
@@ -38,7 +38,7 @@ class QueryEngine:
         # but for now we'll use Arrow integration
         # self.con.execute("INSTALL iceberg; LOAD iceberg;")
 
-    def query(self, sql: str, table_mapping: Optional[Dict[str, str]] = None) -> pa.Table:
+    def query(self, sql: str, table_mapping: dict[str, str] | None = None) -> pa.Table:
         """
         Execute a read-only SQL query. If table_mapping is provided, it maps
         logical table names in SQL to Iceberg table names.

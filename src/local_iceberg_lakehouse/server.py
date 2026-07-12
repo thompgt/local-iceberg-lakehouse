@@ -1,9 +1,10 @@
-import logging
-import os
 import json
+import logging
+from typing import Any
+
 import pyarrow as pa
-from typing import List, Optional, Dict, Any
 from mcp.server.fastmcp import FastMCP
+
 from .catalog import CatalogManager
 from .query import QueryEngine
 
@@ -35,7 +36,7 @@ def get_table_schema(table_name: str) -> str:
         return f"Error: {str(e)}"
 
 @mcp.tool()
-def query(sql: str, table_mapping: Optional[Dict[str, str]] = None) -> str:
+def query(sql: str, table_mapping: dict[str, str] | None = None) -> str:
     """
     Execute a read-only SQL query against the lakehouse.
     Example: query("SELECT * FROM my_table", {"my_table": "default.my_iceberg_table"})
@@ -52,7 +53,7 @@ def query(sql: str, table_mapping: Optional[Dict[str, str]] = None) -> str:
         return f"Error: {str(e)}"
 
 @mcp.tool()
-def upsert(table_name: str, records: List[Dict[str, Any]], join_cols: List[str]) -> str:
+def upsert(table_name: str, records: list[dict[str, Any]], join_cols: list[str]) -> str:
     """
     Insert or update records in a table.
     'records' is a list of dictionaries.

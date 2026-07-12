@@ -1,9 +1,11 @@
 import os
-import shutil
+
 import pytest
 from pyiceberg.schema import Schema
-from pyiceberg.types import NestedField, StringType, IntegerType
+from pyiceberg.types import IntegerType, NestedField, StringType
+
 from local_iceberg_lakehouse.catalog import CatalogManager
+
 
 @pytest.fixture
 def temp_warehouse(tmp_path):

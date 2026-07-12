@@ -1,9 +1,11 @@
-import pytest
 import pyarrow as pa
+import pytest
 from pyiceberg.schema import Schema
-from pyiceberg.types import NestedField, StringType, LongType
+from pyiceberg.types import LongType, NestedField, StringType
+
 from local_iceberg_lakehouse.catalog import CatalogManager
 from local_iceberg_lakehouse.query import QueryEngine
+
 
 @pytest.fixture
 def lakehouse(tmp_path):

@@ -1,20 +1,20 @@
 import logging
 import os
-from typing import List, Optional
+
 from pyiceberg.catalog import load_catalog
 from pyiceberg.exceptions import (
     NamespaceAlreadyExistsError,
     NoSuchNamespaceError,
     NoSuchTableError,
 )
-from pyiceberg.table import Table
-from pyiceberg.schema import Schema
 from pyiceberg.partitioning import PartitionSpec
+from pyiceberg.schema import Schema
+from pyiceberg.table import Table
 
 logger = logging.getLogger(__name__)
 
 class CatalogManager:
-    def __init__(self, catalog_name: str = "local", warehouse_path: Optional[str] = None):
+    def __init__(self, catalog_name: str = "local", warehouse_path: str | None = None):
         self.catalog_name = catalog_name
         if warehouse_path is None:
             warehouse_path = os.path.expanduser("~/.lakehouse/warehouse")
@@ -31,7 +31,9 @@ class CatalogManager:
             },
         )
 
-    def create_table(self, table_name: str, schema: Schema, partition_spec: PartitionSpec = PartitionSpec()) -> Table:
+    def create_table(self, table_name: str, schema: Schema, partition_spec: PartitionSpec | None = None) -> Table:
+        if partition_spec is None:
+            partition_spec = PartitionSpec()
         namespace = ".".join(table_name.split(".")[:-1])
         if namespace:
             try:
@@ -48,7 +50,7 @@ class CatalogManager:
     def load_table(self, table_name: str) -> Table:
         return self.catalog.load_table(table_name)
 
-    def list_tables(self, namespace: str = "default") -> List[str]:
+    def list_tables(self, namespace: str = "default") -> list[str]:
         # list_tables returns list of tuples representing table identifiers
         # e.g., [('default', 'test_table')]
         try:
