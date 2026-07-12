@@ -1,5 +1,6 @@
 import click
 import json
+import logging
 from .catalog import CatalogManager
 from .query import QueryEngine
 from .server import mcp
@@ -48,6 +49,7 @@ def create_sample_table():
 @cli.command()
 def start_server():
     """Start the MCP server."""
+    logging.basicConfig(level=logging.INFO)
     click.echo("Starting MCP server...")
     mcp.run()
 
