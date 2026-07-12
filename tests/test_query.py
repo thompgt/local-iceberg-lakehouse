@@ -54,3 +54,25 @@ def test_upsert(lakehouse):
     result = qe.query("SELECT * FROM people ORDER BY id", table_mapping={"people": table_name}).to_pydict()
     assert result["id"] == [1, 2, 3]
     assert result["name"] == ["Alice", "Bobby", "Charlie"]
+
+def test_upsert_rejects_invalid_join_cols(lakehouse):
+    cm, qe = lakehouse
+    schema = Schema(
+        NestedField(field_id=1, name="id", field_type=LongType(), required=False),
+        NestedField(field_id=2, name="name", field_type=StringType(), required=False),
+    )
+    table_name = "default.people_injection"
+    cm.create_table(table_name, schema)
+
+    initial_data = pa.Table.from_pydict({
+        "id": [1],
+        "name": ["Alice"]
+    })
+    qe.append_data(table_name, initial_data)
+
+    malicious_data = pa.Table.from_pydict({
+        "id": [1],
+        "name": ["Eve"]
+    })
+    with pytest.raises(ValueError):
+        qe.upsert_data(table_name, malicious_data, join_cols=["id) OR 1=1 --"])
