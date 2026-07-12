@@ -80,7 +80,26 @@ class QueryEngine:
             )
 
         self.con.register("existing_data", existing_data)
-        self.con.register("new_data", data)
+
+        # Dedup new_data on join_cols first (last row wins) so that a
+        # batch containing multiple updates to the same key doesn't end
+        # up with duplicate rows for that key after the merge below.
+        ordinal = pa.array(range(data.num_rows), type=pa.int64())
+        self.con.register("new_data_raw", data.append_column("_upsert_row_ordinal", ordinal))
+        quoted_join_cols = ", ".join(f'"{col}"' for col in join_cols)
+        data_columns = ", ".join(f'"{col}"' for col in data.column_names)
+        dedup_sql = f"""
+        SELECT {data_columns} FROM (
+            SELECT *, ROW_NUMBER() OVER (
+                PARTITION BY {quoted_join_cols}
+                ORDER BY _upsert_row_ordinal DESC
+            ) AS _upsert_rn
+            FROM new_data_raw
+        )
+        WHERE _upsert_rn = 1
+        """
+        deduped_new_data = self.con.execute(dedup_sql).to_arrow_table()
+        self.con.register("new_data", deduped_new_data)
 
         # SQL to perform upsert (merge)
         # For simplicity, we'll do: (existing EXCEPT matching_new) UNION new

@@ -77,6 +77,26 @@ def test_upsert_rejects_invalid_join_cols(lakehouse):
     with pytest.raises(ValueError):
         qe.upsert_data(table_name, malicious_data, join_cols=["id) OR 1=1 --"])
 
+def test_upsert_dedups_duplicate_keys_within_new_data(lakehouse):
+    cm, qe = lakehouse
+    schema = Schema(
+        NestedField(field_id=1, name="id", field_type=LongType(), required=False),
+        NestedField(field_id=2, name="name", field_type=StringType(), required=False),
+    )
+    table_name = "default.people_dup_batch"
+    cm.create_table(table_name, schema)
+
+    # A single upsert batch with two updates for the same key: last one should win.
+    batch = pa.Table.from_pydict({
+        "id": [1, 1],
+        "name": ["First", "Second"]
+    })
+    qe.upsert_data(table_name, batch, join_cols=["id"])
+
+    result = qe.query("SELECT * FROM people ORDER BY id", table_mapping={"people": table_name}).to_pydict()
+    assert result["id"] == [1]
+    assert result["name"] == ["Second"]
+
 @pytest.mark.parametrize(
     "sql",
     [
