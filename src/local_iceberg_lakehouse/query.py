@@ -34,9 +34,6 @@ class QueryEngine:
     def __init__(self, catalog_manager: CatalogManager):
         self.catalog_manager = catalog_manager
         self.con = duckdb.connect(database=":memory:")
-        # Install and load iceberg extension if needed, 
-        # but for now we'll use Arrow integration
-        # self.con.execute("INSTALL iceberg; LOAD iceberg;")
 
     def query(self, sql: str, table_mapping: dict[str, str] | None = None) -> pa.Table:
         """
