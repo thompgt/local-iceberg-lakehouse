@@ -3,6 +3,7 @@ name = "local-iceberg-lakehouse"
 version = "0.1.0"
 description = "Local-first data lakehouse with Apache Iceberg and MCP"
 readme = "README.md"
+license = "MIT"
 authors = [
     { name = "Thomas Pequegnot", email = "thoma.pequegnot@gmail.com" }
 ]
