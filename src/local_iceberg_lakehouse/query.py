@@ -1,8 +1,34 @@
+import re
 import duckdb
 import pyarrow as pa
 from typing import Optional, Union, Dict, Any
 from pyiceberg.table import Table
 from .catalog import CatalogManager
+
+# Only allow a single read-only SELECT/WITH statement through query().
+# This is a deliberately conservative allow-list (not a full SQL parser):
+# it blocks statements that mutate data/catalog state or touch the local
+# filesystem/extensions (COPY, ATTACH, INSTALL, PRAGMA, etc.).
+_READ_ONLY_PREFIX_RE = re.compile(r"^\s*(with|select)\b", re.IGNORECASE)
+_BLOCKED_KEYWORDS = (
+    "attach", "detach", "copy", "install", "load", "pragma", "export", "import",
+    "create", "insert", "update", "delete", "drop", "alter", "call", "set",
+    "execute", "vacuum", "checkpoint",
+)
+
+
+def _validate_read_only_sql(sql: str) -> None:
+    statements = [s.strip() for s in sql.split(";") if s.strip()]
+    if len(statements) != 1:
+        raise ValueError("Only a single SQL statement is allowed.")
+    statement = statements[0]
+    if not _READ_ONLY_PREFIX_RE.match(statement):
+        raise ValueError("Only read-only SELECT/WITH statements are allowed.")
+    lowered = statement.lower()
+    for keyword in _BLOCKED_KEYWORDS:
+        if re.search(rf"\b{keyword}\b", lowered):
+            raise ValueError(f"Statement contains disallowed keyword: '{keyword}'.")
+
 
 class QueryEngine:
     def __init__(self, catalog_manager: CatalogManager):
@@ -14,9 +40,11 @@ class QueryEngine:
 
     def query(self, sql: str, table_mapping: Optional[Dict[str, str]] = None) -> pa.Table:
         """
-        Execute a SQL query. If table_mapping is provided, it maps 
+        Execute a read-only SQL query. If table_mapping is provided, it maps
         logical table names in SQL to Iceberg table names.
         """
+        _validate_read_only_sql(sql)
+
         if table_mapping:
             for logical_name, iceberg_name in table_mapping.items():
                 table = self.catalog_manager.load_table(iceberg_name)

@@ -76,3 +76,24 @@ def test_upsert_rejects_invalid_join_cols(lakehouse):
     })
     with pytest.raises(ValueError):
         qe.upsert_data(table_name, malicious_data, join_cols=["id) OR 1=1 --"])
+
+@pytest.mark.parametrize(
+    "sql",
+    [
+        "ATTACH '/etc/passwd' AS pwned",
+        "COPY (SELECT 1) TO '/tmp/exfil.csv'",
+        "INSTALL httpfs",
+        "PRAGMA database_list",
+        "SELECT 1; DROP TABLE people",
+        "DELETE FROM people",
+    ],
+)
+def test_query_rejects_non_read_only_sql(lakehouse, sql):
+    cm, qe = lakehouse
+    with pytest.raises(ValueError):
+        qe.query(sql)
+
+def test_query_allows_select(lakehouse):
+    cm, qe = lakehouse
+    result = qe.query("SELECT 1 AS n").to_pydict()
+    assert result["n"] == [1]
