@@ -94,6 +94,19 @@ def test_get_history_nonexistent_table_returns_error():
     result = get_history("default.does_not_exist")
     assert result.startswith("Error:")
 
+def test_get_history_returns_serializable_summary():
+    schema = Schema(
+        NestedField(field_id=1, name="id", field_type=LongType(), required=False),
+    )
+    table_name = "default.history_check"
+    catalog_manager.create_table(table_name, schema)
+    upsert(table_name, [{"id": 1}], ["id"])
+
+    result = get_history(table_name)
+    history = json.loads(result)
+    assert len(history) == 1
+    assert history[0]["summary"]["operation"] == "append"
+
 def test_rollback_nonexistent_table_returns_error():
     result = rollback("default.does_not_exist", 123)
     assert result.startswith("Error:")
