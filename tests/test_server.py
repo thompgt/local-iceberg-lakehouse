@@ -1,9 +1,11 @@
-import pytest
 import json
-import pyarrow as pa
+
+import pytest
 from pyiceberg.schema import Schema
-from pyiceberg.types import NestedField, StringType, LongType
-from local_iceberg_lakehouse.server import list_tables, query, upsert, get_table_schema, catalog_manager, query_engine
+from pyiceberg.types import LongType, NestedField, StringType
+
+from local_iceberg_lakehouse.server import catalog_manager, list_tables, query, query_engine, upsert
+
 
 @pytest.fixture(autouse=True)
 def setup_catalog(tmp_path):

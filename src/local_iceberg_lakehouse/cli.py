@@ -1,9 +1,11 @@
-import click
-import json
 import logging
+
+import click
+
 from .catalog import CatalogManager
 from .query import QueryEngine
 from .server import mcp
+
 
 @click.group()
 def cli():
@@ -32,7 +34,7 @@ def query(table_name, sql):
 def create_sample_table():
     """Create a sample people table."""
     from pyiceberg.schema import Schema
-    from pyiceberg.types import NestedField, StringType, LongType
+    from pyiceberg.types import LongType, NestedField, StringType
     
     cm = CatalogManager()
     schema = Schema(
