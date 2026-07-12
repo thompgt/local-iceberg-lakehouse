@@ -29,6 +29,10 @@ def test_create_and_list_table(temp_warehouse):
     tables = cm.list_tables()
     assert table_name in tables
 
+def test_list_tables_on_nonexistent_namespace_returns_empty(temp_warehouse):
+    cm = CatalogManager(warehouse_path=temp_warehouse)
+    assert cm.list_tables("never_created") == []
+
 def test_drop_table(temp_warehouse):
     cm = CatalogManager(warehouse_path=temp_warehouse)
     schema = Schema(

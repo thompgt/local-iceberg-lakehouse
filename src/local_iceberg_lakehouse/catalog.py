@@ -1,9 +1,17 @@
+import logging
 import os
 from typing import List, Optional
 from pyiceberg.catalog import load_catalog
+from pyiceberg.exceptions import (
+    NamespaceAlreadyExistsError,
+    NoSuchNamespaceError,
+    NoSuchTableError,
+)
 from pyiceberg.table import Table
 from pyiceberg.schema import Schema
 from pyiceberg.partitioning import PartitionSpec
+
+logger = logging.getLogger(__name__)
 
 class CatalogManager:
     def __init__(self, catalog_name: str = "local", warehouse_path: Optional[str] = None):
@@ -28,10 +36,9 @@ class CatalogManager:
         if namespace:
             try:
                 self.catalog.create_namespace(namespace)
-            except Exception:
-                # Namespace might already exist
-                pass
-        
+            except NamespaceAlreadyExistsError:
+                logger.debug("Namespace '%s' already exists, skipping creation.", namespace)
+
         return self.catalog.create_table(
             identifier=table_name,
             schema=schema,
@@ -46,7 +53,11 @@ class CatalogManager:
         # e.g., [('default', 'test_table')]
         try:
             return [".".join(t) for t in self.catalog.list_tables(namespace)]
+        except NoSuchNamespaceError:
+            logger.debug("Namespace '%s' does not exist yet, no tables to list.", namespace)
+            return []
         except Exception:
+            logger.exception("Failed to list tables in namespace '%s'.", namespace)
             return []
 
     def drop_table(self, table_name: str):
@@ -56,5 +67,5 @@ class CatalogManager:
         try:
             self.load_table(table_name)
             return True
-        except Exception:
+        except NoSuchTableError:
             return False
