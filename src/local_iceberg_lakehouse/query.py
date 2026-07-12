@@ -43,13 +43,22 @@ class QueryEngine:
         """
         table = self.catalog_manager.load_table(table_name)
         existing_data = table.scan().to_arrow()
-        
+
+        valid_columns = set(table.schema().column_names)
+        invalid_cols = [col for col in join_cols if col not in valid_columns]
+        if invalid_cols:
+            raise ValueError(
+                f"join_cols contains columns not present in table '{table_name}': {invalid_cols}"
+            )
+
         self.con.register("existing_data", existing_data)
         self.con.register("new_data", data)
-        
+
         # SQL to perform upsert (merge)
         # For simplicity, we'll do: (existing EXCEPT matching_new) UNION new
-        join_condition = " AND ".join([f"existing_data.{col} = new_data.{col}" for col in join_cols])
+        join_condition = " AND ".join(
+            [f'existing_data."{col}" = new_data."{col}"' for col in join_cols]
+        )
         
         upsert_sql = f"""
         SELECT * FROM new_data
