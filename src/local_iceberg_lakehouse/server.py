@@ -88,7 +88,7 @@ def get_history(table_name: str) -> str:
             history.append({
                 "snapshot_id": snapshot.snapshot_id,
                 "timestamp_ms": snapshot.timestamp_ms,
-                "summary": snapshot.summary
+                "summary": snapshot.summary.model_dump() if snapshot.summary is not None else None
             })
         return json.dumps(history, indent=2)
     except Exception as e:
