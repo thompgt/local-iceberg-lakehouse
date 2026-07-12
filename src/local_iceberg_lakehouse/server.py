@@ -72,7 +72,7 @@ def rollback(table_name: str, snapshot_id: int) -> str:
     """Rollback a table to a specific snapshot ID."""
     try:
         table = catalog_manager.load_table(table_name)
-        table.rollback_to_snapshot(snapshot_id)
+        table.manage_snapshots().rollback_to_snapshot(snapshot_id).commit()
         return f"Successfully rolled back {table_name} to snapshot {snapshot_id}."
     except Exception as e:
         logger.exception("rollback failed for table '%s' to snapshot %s.", table_name, snapshot_id)

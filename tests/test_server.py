@@ -4,7 +4,7 @@ import pytest
 from pyiceberg.schema import Schema
 from pyiceberg.types import LongType, NestedField, StringType
 
-from local_iceberg_lakehouse.server import catalog_manager, list_tables, query, query_engine, upsert
+from local_iceberg_lakehouse.server import catalog_manager, list_tables, query, query_engine, rollback, upsert
 
 
 @pytest.fixture(autouse=True)
@@ -44,3 +44,25 @@ def test_upsert_and_query_tools():
     res = query("SELECT val FROM t WHERE id = 1", {"t": table_name})
     data = json.loads(res)
     assert data[0]["val"] == "A_updated"
+
+def test_rollback_tool():
+    schema = Schema(
+        NestedField(field_id=1, name="id", field_type=LongType(), required=False),
+        NestedField(field_id=2, name="val", field_type=StringType(), required=False),
+    )
+    table_name = "default.rollback_me"
+    catalog_manager.create_table(table_name, schema)
+
+    upsert(table_name, [{"id": 1, "val": "A"}], ["id"])
+    table = catalog_manager.load_table(table_name)
+    first_snapshot_id = table.current_snapshot().snapshot_id
+
+    upsert(table_name, [{"id": 1, "val": "A_updated"}], ["id"])
+    res = query("SELECT val FROM t WHERE id = 1", {"t": table_name})
+    assert json.loads(res)[0]["val"] == "A_updated"
+
+    result = rollback(table_name, first_snapshot_id)
+    assert "Successfully rolled back" in result
+
+    res = query("SELECT val FROM t WHERE id = 1", {"t": table_name})
+    assert json.loads(res)[0]["val"] == "A"
